@@ -1,0 +1,8 @@
+aiogram==3.0.0b7
+SQLAlchemy==1.4.44
+psycopg2==2.9.5
+ujson==5.5.0
+aiodns==3.0.0
+flake8==6.0.0
+mypy==0.991
+python-dotenv==0.21.0
