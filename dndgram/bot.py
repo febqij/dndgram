@@ -1,18 +1,17 @@
 import asyncio
-import logging
+from aiogram import Bot, Dispatcher, types, filters
+
+from data.config import config
 
 
-async def on_startup(dp):
-    from utils.notify_admins import on_startup_notify
-    await on_startup_notify(dp)
+bot = Bot(token=config.BOT_TOKEN.get_secret_value(), parse_mode="HTML")
 
-    from utils.set_bot_commands import set_default_commands
-    await set_default_commands(dp)
+dp = Dispatcher()
 
 
-if __name__ == '__main__':
-    asyncio.run(main())
-    from aiogram import executor
+async def main():
     from handlers import dp
+    await dp.start_polling(bot)
 
-    executor.start_polling(dp, on_startup=on_startup, skip_updates=True)
+if __name__ == "__main__":
+    asyncio.run(main())
