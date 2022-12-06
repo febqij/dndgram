@@ -1,0 +1,17 @@
+from typing import Union
+
+from aiogram.filters import Filter
+from aiogram.types import Message
+
+
+class ChatTypeFilter(Filter):
+    def __init__(self, chat_type: Union[str, list]) -> None:
+        self.chat_type = chat_type
+
+    async def __call__(self, message: Message) -> bool:
+        print(f"chat_type: {self.chat_type}")
+        print(f"message.chat.type: {message.chat.type}")
+        if isinstance(self.chat_type, str):
+            return message.chat.type == self.chat_type
+        else:
+            return message.chat.type in self.chat_type

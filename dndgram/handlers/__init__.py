@@ -1,4 +1,4 @@
-__all__ = ['dp']
+__all__ = ['dp', 'router']
 
 from .start import dp
-from .menu import dp
+from .menu import router

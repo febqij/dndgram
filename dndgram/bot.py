@@ -10,7 +10,9 @@ dp = Dispatcher()
 
 
 async def main():
-    from handlers import dp
+    from handlers import dp, router
+    await bot.delete_webhook(drop_pending_updates=True)
+    dp.include_router(router)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
