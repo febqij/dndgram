@@ -1,5 +1,5 @@
 from aiogram import types
-from aiogram.dispatcher import FSMContext
+from aiogram.fsm.context import FSMContext
 
 from utils.db_api.session import session
 from utils.db_api.schemas.user import User

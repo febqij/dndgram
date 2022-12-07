@@ -22,7 +22,7 @@ class Config(BaseSettings):
 config = Config()
 
 engine = create_engine(
-    f"postgresql+psycopg2://{config.USER}:{config.PASSWORD}@{config.HOST}/{config.DATABASE}"
+    f"postgresql+psycopg2://{config.USER}:{config.PASSWORD.get_secret_value()}@{config.HOST}/{config.DATABASE}"
 )
 
 session = scoped_session(sessionmaker(bind=engine))

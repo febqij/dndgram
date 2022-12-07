@@ -9,8 +9,6 @@ class ChatTypeFilter(Filter):
         self.chat_type = chat_type
 
     async def __call__(self, message: Message) -> bool:
-        print(f"chat_type: {self.chat_type}")
-        print(f"message.chat.type: {message.chat.type}")
         if isinstance(self.chat_type, str):
             return message.chat.type == self.chat_type
         else:
