@@ -1,5 +1,6 @@
 aiogram==3.0.0b7
 SQLAlchemy==1.4.44
+pydantic==4.4.0
 psycopg2==2.9.5
 ujson==5.5.0
 aiodns==3.0.0
