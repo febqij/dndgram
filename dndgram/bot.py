@@ -22,6 +22,7 @@ async def main():
 
     handlers.dp.include_router(handlers.router_menu)
     handlers.dp.include_router(handlers.router_profile)
+    handlers.dp.include_router(handlers.router_back)
 
     await handlers.dp.start_polling(bot)
 

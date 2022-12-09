@@ -10,10 +10,14 @@ from utils.filters.chat_type import ChatTypeFilter
 import utils.keyboards as kb
 from utils.state import UserState
 from utils.db_api.schemas.user import User
+from middlewares import ChatHistoryMessageMiddleware
+
 from bot import bot
 
 
 router_profile = Router()
+router_profile.message(ChatTypeFilter(chat_type=["private"]))
+router_profile.callback_query.middleware(ChatHistoryMessageMiddleware())
 
 
 def get_profile_text(user: User):
@@ -43,8 +47,7 @@ async def show_profile_callback(callbackquery: types.CallbackQuery, state: FSMCo
 
 
 @router_profile.message(
-    Command("profile"),
-    ChatTypeFilter(chat_type=["private"])
+    Command("profile")
 )
 async def show_profile_command(
     message: types.Message,

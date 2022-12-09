@@ -1,20 +1,21 @@
 from sqlalchemy.exc import IntegrityError
 
 from utils.db_api.session import session
-from utils.db_api.schemas.user import User
 
 from data.config import logger
 
 
-def commit(user: User):
-    session.add(user)
+def commit(row):
+    session.add(row)
 
     try:
         session.commit()
-        logger.debug(f"Успешный коммит данных:\n{user.__str__()}")
+        logger.debug(f"Успешный коммит данных:\n{row.__str__()}")
         return True
     except IntegrityError as error:
         session.rollback()
-        logger.debug(f"IntegrityError.orig: {error.orig}")
-        logger.debug(f"IntegrityError.statement: {error.statement}")
+        logger.debug(
+            f"IntegrityError.orig: {error.orig}"
+            f"IntegrityError.statement: {error.statement}"
+        )
         return False

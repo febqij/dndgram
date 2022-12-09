@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 
 from utils.db_api.session import session
-from utils.db_api.schemas.user import User
+from utils.db_api.schemas import User, Chat
 from utils.db_api.db_commit import commit
 from data.config import logger
 
@@ -19,3 +19,16 @@ async def register_user(message: types.Message):
 async def select_user(user_id):
     """Return user data from Postgres."""
     return session.query(User).filter(User.id == user_id).first()
+
+
+async def select_message(message_id):
+    """Return message data from Postgres for current chat."""
+    return session.query(Chat).filter(Chat.message_id == message_id).first()
+
+
+async def insert_message_id(message: types.Message):
+    chat = Chat(
+        user_id = message.chat.id,
+        message_id = message.message_id
+    )
+    commit(chat)

@@ -20,6 +20,7 @@ class User(Base):
     location = relationship('Location', back_populates="users")
     is_master = relationship('Master', back_populates="user")
     is_player = relationship('Player', back_populates="user")
+    chat = relationship('Chat', back_populates="user")
 
     def __str__(self):
         return {

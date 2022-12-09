@@ -15,12 +15,6 @@ from bot import bot
 )
 async def command_start(message: types.Message, state: FSMContext):
     """Регистрация id и username при инициации команды /start"""
-    if db.register_user(message):
+    if await db.register_user(message):
         await message.answer(f'Добро пожаловать, {message.from_user.username}!')
-    try:
-        await show_menu(message, state)
-    finally:
-        await bot.delete_message(
-            chat_id=message.from_user.id,
-            message_id=message.message_id
-        )
+    await show_menu(message, state)
