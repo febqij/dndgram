@@ -7,7 +7,7 @@ from utils.db_api.db_commit import commit
 from data.config import logger
 
 
-def register_user(message: types.Message):
+async def register_user(message: types.Message):
     username = message.from_user.username or None
     user = User(
         id=message.from_user.id,
@@ -16,6 +16,6 @@ def register_user(message: types.Message):
     commit(user)
 
 
-def select_user(user_id):
+async def select_user(user_id):
     """Return user data from Postgres."""
     return session.query(User).filter(User.id == user_id).first()

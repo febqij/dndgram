@@ -6,6 +6,7 @@ from bot import dp
 from handlers.menu import show_menu
 from utils.filters.chat_type import ChatTypeFilter
 import utils.db_api.db_quick_commands as db
+from bot import bot
 
 
 @dp.message(
@@ -16,4 +17,10 @@ async def command_start(message: types.Message, state: FSMContext):
     """Регистрация id и username при инициации команды /start"""
     if db.register_user(message):
         await message.answer(f'Добро пожаловать, {message.from_user.username}!')
-    await show_menu(message, state)
+    try:
+        await show_menu(message, state)
+    finally:
+        await bot.delete_message(
+            chat_id=message.from_user.id,
+            message_id=message.message_id
+        )
