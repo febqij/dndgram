@@ -5,11 +5,12 @@ from aiogram import F
 from aiogram.fsm.context import FSMContext
 
 import utils.keyboards as kb
-import utils.db_api.db_quick_commands as db
 from utils.db_api.schemas.user import User
 from utils.filters.chat_type import ChatTypeFilter
 from utils.state import UserState
-from utils.state import UserState
+
+from handlers.profile import show_profile_callback
+
 from bot import bot
 
 
@@ -40,3 +41,8 @@ async def show_profile_command(
 ):
     from handlers.menu import show_menu
     await show_menu(message, state)
+
+
+@router_back.callback_query(kb.AgeCallBack.filter(F.button == "back"))
+async def back_to_profile(callbackquery: types.CallbackQuery, state: FSMContext):
+    await show_profile_callback(callbackquery, state)

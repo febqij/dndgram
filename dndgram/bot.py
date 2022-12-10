@@ -20,9 +20,8 @@ async def main():
 
     await bot.delete_webhook(drop_pending_updates=True)
 
-    handlers.dp.include_router(handlers.router_menu)
-    handlers.dp.include_router(handlers.router_profile)
-    handlers.dp.include_router(handlers.router_back)
+    for router in handlers.__routers__:
+        handlers.dp.include_router(router)
 
     await handlers.dp.start_polling(bot)
 
