@@ -5,12 +5,9 @@ from utils.db_api.session import session
 from data.config import logger
 
 
-def commit(row):
-    session.add(row)
-
+def commit(object):
     try:
         session.commit()
-        logger.debug(f"Успешный коммит данных:\n{row.__str__()}")
         return True
     except IntegrityError as error:
         session.rollback()

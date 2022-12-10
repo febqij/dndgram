@@ -16,23 +16,21 @@ from bot import bot
 
 async def message_cleaner(user: User):
     chat_list = [x for x in user.chat if len(user.chat) > 1]
-    chat_list.sort()
+    chat_list.sort(key=lambda x: x.message_id)
 
-    try:
-        for chat in chat_list[:-1]:
+    for chat in chat_list[:-1]:
+        try:
             await bot.delete_message(
                 chat_id=user.id,
                 message_id=chat.message_id
             )
-            await delete_chat_row(Chat(message_id=chat.message_id, user_id=user.id))
-    except TelegramBadRequest as e:
-        logger.warning(
-            "Error deleting the message. The message has probably already been "
-            f"deleted by the user. Details::\n{e.message}"
-        )
-        await delete_chat_row(Chat(message_id=chat.message_id, user_id=user.id))
-    finally:
-        ...
+        except TelegramBadRequest as e:
+            logger.warning(
+                "Error deleting the message. The message has probably already been "
+                f"deleted by the user. Details:\n{e.message}"
+            )
+        finally:
+            await delete_chat_row(chat)
 
 
 class ChatHistoryMessageMiddleware(BaseMiddleware):

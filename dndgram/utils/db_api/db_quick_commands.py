@@ -1,6 +1,7 @@
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 
+from sqlalchemy import delete
 from sqlalchemy.orm import joinedload
 
 from utils.db_api.session import session
@@ -15,7 +16,9 @@ async def register_user(message: types.Message):
         id=message.from_user.id,
         username=username,
     )
-    commit(user)
+    session.add(user)
+    if commit(user):
+        logger.debug(f"Успешный add-коммит данных:\n{user.__str__()}")
 
 
 async def select_user(user_id):
@@ -38,10 +41,12 @@ async def insert_message_id(message: types.Message):
         user_id = message.chat.id,
         message_id = message.message_id
     )
-    commit(chat)
+    session.add(chat)
+    if commit(chat):
+        logger.debug(f"Добавлено в tables.chat:\n{chat.__str__()}")
 
-
-async def delete_chat_row(chat):
-    session.delete(chat)
-    session.commit()
-    logger.debug("Успешное удаление записи:")
+async def delete_chat_row(chat: Chat):
+    sql_command = delete(Chat).where(Chat.message_id == chat.message_id)
+    session.execute(sql_command)
+    if commit(chat):
+        logger.debug(f"Удалена запись в tables.chat:\n{chat.__str__()}")

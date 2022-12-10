@@ -19,6 +19,5 @@ class Chat(Base):
     def __str__(self):
         return {
             "message_id": self.message_id,
-            "user_id": self.user_id,
-            "user": self.user
+            "user_id": self.user_id
         }
