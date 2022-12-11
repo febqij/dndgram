@@ -10,14 +10,16 @@ from utils.filters.chat_type import ChatTypeFilter
 import utils.keyboards as kb
 from utils.state import UserState
 from utils.db_api.schemas.user import User
-from middlewares import ChatHistoryMessageMiddleware
+import middlewares as mdlw
 
 from bot import bot
 
 
 router_age = Router()
 router_age.message(ChatTypeFilter(chat_type=["private"]))
-router_age.callback_query.middleware(ChatHistoryMessageMiddleware())
+router_age.callback_query.middleware(mdlw.ChatHistoryCallbackQueryMiddleware())
+router_age.message.middleware(mdlw.ChatHistoryMessageMiddleware())
+
 
 
 def get_age_text(user: User):
@@ -55,13 +57,7 @@ async def edit_age_command(
 
     user: User = await db.select_user(message.from_user.id)
 
-    try:
-        await message.answer(
-                text=get_age_text(user),
-                reply_markup=kb.get_kb_age()
-            )
-    finally:
-        await bot.delete_message(
-            chat_id=message.from_user.id,
-            message_id=message.message_id
+    await message.answer(
+            text=get_age_text(user),
+            reply_markup=kb.get_kb_age()
         )

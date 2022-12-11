@@ -11,10 +11,15 @@ from utils.state import UserState
 
 from handlers.profile import show_profile_callback
 
+import middlewares as mdlw
+
 from bot import bot
 
 
 router_back = Router()
+router_back.message(ChatTypeFilter(chat_type=["private"]))
+router_back.callback_query.middleware(mdlw.ChatHistoryCallbackQueryMiddleware())
+router_back.message.middleware(mdlw.ChatHistoryMessageMiddleware())
 
 
 @router_back.callback_query(kb.ProfileCallBack.filter(F.button == "back"))
@@ -30,15 +35,8 @@ async def back_to_menu(callbackquery: types.CallbackQuery, state: FSMContext):
     )
 
 
-@router_back.message(
-    Command("back"),
-    ChatTypeFilter(chat_type=["private"]),
-    UserState.profile
-)
-async def show_profile_command(
-    message: types.Message,
-    state: FSMContext
-):
+@router_back.message(Command("back"), UserState.profile)
+async def back_to_menu_command(message: types.Message, state: FSMContext):
     from handlers.menu import show_menu
     await show_menu(message, state)
 
@@ -46,3 +44,10 @@ async def show_profile_command(
 @router_back.callback_query(kb.AgeCallBack.filter(F.button == "back"))
 async def back_to_profile(callbackquery: types.CallbackQuery, state: FSMContext):
     await show_profile_callback(callbackquery, state)
+
+
+@router_back.message(Command("back"), UserState.age)
+async def back_to_profile_command(message: types.Message, state: FSMContext):
+    from handlers.profile import show_profile_command
+    await show_profile_command(message, state)
+    await mdlw.message_cleaner(message.from_user)

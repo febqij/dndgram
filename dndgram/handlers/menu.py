@@ -9,11 +9,14 @@ import utils.keyboards as kb
 from utils.keyboards import get_kb_menu
 from utils.state import UserState
 
+import middlewares as mdlw
+
 from bot import bot
 
 
 router_menu = Router()
-
+router_menu.callback_query.middleware(mdlw.ChatHistoryCallbackQueryMiddleware())
+router_menu.message.middleware(mdlw.ChatHistoryMessageMiddleware())
 
 def get_menu_text():
     return "Меню навигации:"
@@ -25,16 +28,10 @@ async def show_menu(message: types.Message, state: FSMContext):
 
     await db.register_user(message)
 
-    try:
-        await message.answer(
-            get_menu_text(),
-            reply_markup=get_kb_menu()
-        )
-    finally:
-        await bot.delete_message(
-            chat_id=message.from_user.id,
-            message_id=message.message_id
-        )
+    await message.answer(
+        get_menu_text(),
+        reply_markup=get_kb_menu()
+    )
 
 
 
