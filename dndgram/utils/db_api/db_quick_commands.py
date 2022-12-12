@@ -124,3 +124,15 @@ async def delete_gender(user: types.User):
             f"shemas/db_quick_command.py at delete_gender function:\n{e.__traceback__}"
         )
         return False
+
+
+async def get_preferences(user_id: int):
+    return (
+        session.scalars(
+            select(User.preferences).filter_by(id=user_id).scalar_one()
+        )
+    )
+
+
+async def insert_preference(callbackquery: types.CallbackQuery):
+    value = (callbackquery.data).split(":")[1]
