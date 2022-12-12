@@ -95,3 +95,32 @@ async def delete_age(user: types.User):
             f"shemas/db_quick_command.py at delete_age function:\n{e.__traceback__}"
         )
         return False
+
+
+async def insert_gender(callbackquery: types.CallbackQuery):
+    value = (callbackquery.data).split(":")[1]
+    session.execute(
+        update(User)
+        .where(User.id == callbackquery.from_user.id)
+        .values(gender=value)
+        .execution_options(synchronize_session="fetch")
+    )
+    session.commit()
+    return value
+
+
+async def delete_gender(user: types.User):
+    try:
+        session.execute(
+            update(User)
+            .where(User.id == user.id)
+            .values(gender=null())
+            .execution_options(synchronize_session="fetch")
+        )
+        session.commit()
+        return True
+    except Exception as e:
+        logger.error(
+            f"shemas/db_quick_command.py at delete_gender function:\n{e.__traceback__}"
+        )
+        return False

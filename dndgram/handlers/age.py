@@ -57,9 +57,7 @@ async def edit_age_callback(callbackquery: types.CallbackQuery, state: FSMContex
         )
 
 
-@router_age.message(
-    Command("age")
-)
+@router_age.message(Command("age"))
 async def edit_age_command(
     message: types.Message,
     state: FSMContext
@@ -86,13 +84,12 @@ async def entering_age_value(
         age = int(message.text)
         if age < 13:
             text = "Слишком маленькое значение:"
-            raise
         if age > 70:
             text = "Попробуйте еще раз, на этот раз без шуток:"
-            raise
-        age = await dbqc.insert_age(message)
-        text = f"Ваш возраст успешно изменен на {age}"
-    except ValueError as e:
+        else:
+            age = await dbqc.insert_age(message)
+            text = f"Ваш возраст успешно изменен на {age}"
+    except ValueError:
         text = "Введите корректный возраст в виде целочисленного значения:"
     finally:
         await bot.edit_message_text(
