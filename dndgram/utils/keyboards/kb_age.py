@@ -6,13 +6,24 @@ class AgeCallBack(CallbackData, prefix="age"):
     button: str
 
 
-def get_kb_age() -> InlineKeyboardMarkup:
+def get_kb_age_full() -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text="Убрать возраст", callback_data=AgeCallBack(button="reset_age").pack()
             ),
         ],
+        [
+            InlineKeyboardButton(
+                text="Назад в профиль", callback_data=AgeCallBack(button="back").pack()
+            )
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def get_kb_age_short() -> InlineKeyboardMarkup:
+    buttons = [
         [
             InlineKeyboardButton(
                 text="Назад в профиль", callback_data=AgeCallBack(button="back").pack()

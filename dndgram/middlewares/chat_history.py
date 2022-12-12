@@ -5,9 +5,7 @@ from aiogram.types import Message, CallbackQuery, BotCommand
 from aiogram.exceptions import TelegramBadRequest
 
 from utils.db_api.schemas import User, Chat
-from utils.db_api.db_quick_commands import (
-    insert_message_id, select_message, get_user_mesages, delete_chat_row
-)
+import utils.db_api.db_quick_commands as dbqc
 
 from data.config import logger
 
@@ -31,7 +29,7 @@ async def message_cleaner(user: User):
                 f" Details:\n{e.message}"
             )
         finally:
-            await delete_chat_row(chat)
+            await dbqc.delete_chat_row(chat)
 
 
 class ChatHistoryCallbackQueryMiddleware(BaseMiddleware):
@@ -41,10 +39,10 @@ class ChatHistoryCallbackQueryMiddleware(BaseMiddleware):
         event: CallbackQuery,
         data: Dict[str, Any]
     ) -> Any:
-        if not await select_message(event.message.message_id):
-            await insert_message_id(event.message)
+        if not await dbqc.select_message(event.message.message_id):
+            await dbqc.insert_message_id(event.message)
 
-        user = await get_user_mesages(event.from_user.id)
+        user = await dbqc.get_user_mesages(event.from_user.id)
 
         await message_cleaner(user[0])
 
