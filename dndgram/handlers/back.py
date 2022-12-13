@@ -42,24 +42,36 @@ async def back_to_menu_command(message: types.Message, state: FSMContext):
 
 
 @router_back.callback_query(kb.AgeCallBack.filter(F.button == "back"))
-async def back_to_profile(callbackquery: types.CallbackQuery, state: FSMContext):
+async def back_to_profile_from_age(callbackquery: types.CallbackQuery, state: FSMContext):
     await show_profile_callback(callbackquery, state)
 
 
 @router_back.callback_query(kb.GenderCallBack.filter(F.button == "back"))
-async def back_to_profile(callbackquery: types.CallbackQuery, state: FSMContext):
+async def back_to_profile_from_gender(callbackquery: types.CallbackQuery, state: FSMContext):
+    await show_profile_callback(callbackquery, state)
+
+
+@router_back.callback_query(kb.PreferencesCallBack.filter(F.button == "back"))
+async def back_to_profile_from_preferences(callbackquery: types.CallbackQuery, state: FSMContext):
     await show_profile_callback(callbackquery, state)
 
 
 @router_back.message(Command("back"), UserState.age)
-async def back_to_profile_command(message: types.Message, state: FSMContext):
+async def back_to_profile_command_from_age(message: types.Message, state: FSMContext):
     from handlers.profile import show_profile_command
     await show_profile_command(message, state)
     await mdlw.message_cleaner(message.from_user)
 
 
 @router_back.message(Command("back"), UserState.gender)
-async def back_to_profile_command(message: types.Message, state: FSMContext):
+async def back_to_profile_command_from_gender(message: types.Message, state: FSMContext):
+    from handlers.profile import show_profile_command
+    await show_profile_command(message, state)
+    await mdlw.message_cleaner(message.from_user)
+
+
+@router_back.message(Command("back"), UserState.preferences)
+async def back_to_profile_command_from_preferences(message: types.Message, state: FSMContext):
     from handlers.profile import show_profile_command
     await show_profile_command(message, state)
     await mdlw.message_cleaner(message.from_user)

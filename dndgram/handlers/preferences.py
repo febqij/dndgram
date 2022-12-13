@@ -1,4 +1,5 @@
 from contextlib import suppress
+from typing import List, Set
 
 from aiogram.filters import Command
 from aiogram import Router, types, html, F
@@ -25,7 +26,7 @@ router_preferences.message.middleware(mdlw.ChatHistoryMessageMiddleware())
 
 def get_preference_text(user: User):
     if user.preferences:
-        return (f"Ваш указанный текущий пол: {html.code(user.preferences)}")
+        return (f"Ваш текущий список предпочитаемых игровых систем: {html.code(user.preferences)}")
     return (
         "Данные о ваших игровых предпочтениях отсутствуют.\n"
         "Чтобы добавить или убрать элемент из списка предпочтений нажмите на соответствующую кнопку:"
@@ -72,6 +73,18 @@ def union_preferences():
     return set(_list)
 
 
+async def get_set_preferences(user_id: int):
+    preferences = await dbqc.get_preferences(user_id)
+
+    if preferences is None:
+        preferences: Set = set()
+        length = 0
+    else:
+        preferences: Set = set(preferences.split(","))
+        length = len(preferences)
+    logger.debug(f"length, preferences: {length}, {preferences}")
+    return length, preferences
+
 @router_preferences.callback_query(
     kb.PreferencesCallBack.filter(F.button.in_(union_preferences()))
 )
@@ -80,26 +93,47 @@ async def choose_preferences_value(
     state: FSMContext
 ):
     try:
-        preference = await dbqc.get_preferences(callbackquery.from_user.id)
-        logger.debug(f"Получены следующие предпочтения:\n{preference}")
+        user_id = callbackquery.from_user.id
+        length, preferences = await get_set_preferences(user_id)
+        pending_value: str = (callbackquery.data).split(":")[1]
+        if pending_value not in preferences:
+            preferences.add(pending_value)
+            preferences = ",".join(preferences)
+            await dbqc.insert_preference(preferences, user_id)
+            await callbackquery.answer(
+                text=f"{pending_value} добавлена в ваш список."
+            )
 
-        await callbackquery.answer(
-            text=f"Изменено на {gender_decoder(gender)}"
-        )
+        elif length > 1:
+            preferences.remove(pending_value)
+            preferences = ",".join(preferences)
+            await dbqc.delete_preference(preferences, user_id)
+            await callbackquery.answer(
+                text=f"{pending_value} убрана из списка ваших предпочтений."
+            )
+        else:
+            await dbqc.clear_preferences(user_id)
+            await callbackquery.answer(
+                text=(
+                    f"{pending_value} убрана из списка ваших предпочтений.\n"
+                    "Список теперь пуст"
+                )
+            )
+
     except Exception as e:
         await callbackquery.answer(
                 text="Что-то пошло не так 🤷‍♂️"
             )
         logger.error(
-            "An unexpected error has occurred in the handlers/gender.py "
-            f"choose_gender_value while trying insert_gender:\n{e}"
+            "An unexpected error has occurred in the handlers/preferences.py "
+            f"`choose_preferences_value` previously unhandled error:\n{e}"
         )
     finally:
-        await edit_gender_callback(callbackquery, state)
+        await edit_preferences_callback(callbackquery, state)
 
 
-@router_preferences.message(UserState.gender, F.content_type.in_({'text'}))
-async def entering_gender_value(
+@router_preferences.message(UserState.preferences, F.content_type.in_({'text'}))
+async def entering_preference_value(
     message: types.Message,
     state: FSMContext
 ):
@@ -115,18 +149,3 @@ async def entering_gender_value(
             message_id=chat.message_id,
             reply_markup=kb.get_kb_preferences()
         )
-
-
-@router_preferences.callback_query(
-    kb.GenderCallBack.filter(F.button == "reset_gender")
-)
-async def reset_gender_callback(
-    callbackquery: types.CallbackQuery, state: FSMContext
-):
-    user: types.User = callbackquery.from_user
-
-    if await dbqc.delete_gender(user):
-        await edit_gender_callback(callbackquery, state)
-        await callbackquery.answer(
-                text="Данные о половой принадлежности удалены из вашего профиля."
-            )

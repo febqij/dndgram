@@ -127,12 +127,66 @@ async def delete_gender(user: types.User):
 
 
 async def get_preferences(user_id: int):
-    return (
-        session.scalars(
-            select(User.preferences).filter_by(id=user_id).scalar_one()
+    return session.execute(
+        select(User.preferences).filter_by(id=user_id)
+    ).scalar_one()
+
+
+async def insert_preference(preferences: str, user_id: int):
+    try:
+        session.execute(
+            update(User)
+            .where(User.id == user_id)
+            .values(preferences=preferences)
+            .execution_options(synchronize_session="fetch")
         )
-    )
+        session.commit()
+        return True
+    except Exception as e:
+        logger.error(
+            f"shemas/db_quick_command.py at `insert_preference` function:\n{e.__traceback__}"
+        )
+        return False
 
 
-async def insert_preference(callbackquery: types.CallbackQuery):
-    value = (callbackquery.data).split(":")[1]
+async def delete_preference(preferences: str, user_id: int):
+    """
+    It's not really a deletion. When you click the button again, the cell in
+    the table is simply overwritten with a new list, but without the specified
+    value.
+    """
+    try:
+        session.execute(
+            update(User)
+            .where(User.id == user_id)
+            .values(preferences=preferences)
+            .execution_options(synchronize_session="fetch")
+        )
+        session.commit()
+        return True
+    except Exception as e:
+        logger.error(
+            f"shemas/db_quick_command.py at `delete_preference` function:\n{e.__traceback__}"
+        )
+        return False
+
+
+async def clear_preferences(user_id: int):
+    """
+    It is used if there should be no values left in the preference list after
+    the user clicks the button.
+    """
+    try:
+        session.execute(
+            update(User)
+            .where(User.id == user_id)
+            .values(preferences=null())
+            .execution_options(synchronize_session="fetch")
+        )
+        session.commit()
+        return True
+    except Exception as e:
+        logger.error(
+            f"shemas/db_quick_command.py at `clear_preferences` function:\n{e.__traceback__}"
+        )
+        return False
