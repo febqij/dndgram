@@ -26,6 +26,11 @@ def get_kb_profile() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton(
+                text="Мое местоположение", callback_data=ProfileCallBack(button="location").pack()
+            )
+        ],
+        [
+            InlineKeyboardButton(
                 text="Назад в меню", callback_data=ProfileCallBack(button="back").pack()
             )
         ]

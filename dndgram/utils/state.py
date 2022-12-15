@@ -10,3 +10,4 @@ class UserState(StatesGroup):
     gender = State()
     preferences = State()
     bio = State()
+    location = State()

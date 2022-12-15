@@ -4,7 +4,7 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 
 from sqlalchemy import delete, select, update
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, lazyload, subqueryload
 
 from utils.db_api.session import session
 from utils.db_api.schemas import User, Chat
@@ -36,6 +36,22 @@ async def select_message(message_id):
 async def get_user_mesages(user_id):
     """Return all user messages Postgres for current bot."""
     return session.query(User).options(joinedload('chat')).filter(User.id == user_id).all()
+
+
+async def get_last_user_message(user_id):
+    query =  select(
+        User
+    ).options(
+        lazyload(User.chat).subqueryload(Chat.user)
+    ).where(
+        User.id == user_id
+    )
+
+    result = session.scalars(query)
+    user: User = (result.one())
+    message: Chat = (user.chat)[0]
+
+    return message
 
 
 async def insert_message_id(message: types.Message):
@@ -188,5 +204,39 @@ async def clear_preferences(user_id: int):
     except Exception as e:
         logger.error(
             f"shemas/db_quick_command.py at `clear_preferences` function:\n{e.__traceback__}"
+        )
+        return False
+
+
+async def update_bio(message: types.Message):
+    try:
+        session.execute(
+            update(User)
+            .where(User.id == message.from_user.id)
+            .values(bio=message.text)
+            .execution_options(synchronize_session="fetch")
+        )
+        session.commit()
+        return True
+    except Exception as e:
+        logger.error(
+            f"shemas/db_quick_command.py at `update_bio` function:\n{e.__traceback__}"
+        )
+        return False
+
+
+async def clear_bio(user_id: int):
+    try:
+        session.execute(
+            update(User)
+            .where(User.id == user_id)
+            .values(bio=null())
+            .execution_options(synchronize_session="fetch")
+        )
+        session.commit()
+        return True
+    except Exception as e:
+        logger.error(
+            f"shemas/db_quick_command.py at `clear_bio` function:\n{e.__traceback__}"
         )
         return False

@@ -6,22 +6,35 @@ from aiogram.exceptions import TelegramBadRequest
 
 from utils.db_api.schemas import User, Chat
 import utils.db_api.db_quick_commands as dbqc
+import utils.keyboards as kb
 
 from data.config import logger
 
 from bot import bot
+import pprint as pp
 
-
-async def message_cleaner(user: User):
+async def init_chat_list(user: User):
     chat_list = [x for x in user.chat if len(user.chat) > 1]
     chat_list.sort(key=lambda x: x.message_id)
+    return chat_list
 
+
+async def message_cleaner(user: User, event_data: str):
+    chat_list = await init_chat_list(user)
+    if event_data == 'location:back':
+        await bot.delete_message(
+            chat_id=user.id,
+            message_id=chat_list[-1].message_id
+        )
+        await dbqc.delete_chat_row(chat_list[-1])
+        del chat_list[-1]
     for chat in chat_list[:-1]:
         try:
             await bot.delete_message(
                 chat_id=user.id,
                 message_id=chat.message_id
             )
+            logger.debug("Сработало удаление bot.delete_message")
         except TelegramBadRequest as e:
             logger.warning(
                 "Error deleting the message at ChatHistoryCallbackQueryMiddleware."
@@ -44,8 +57,8 @@ class ChatHistoryCallbackQueryMiddleware(BaseMiddleware):
 
         user = await dbqc.get_user_mesages(event.from_user.id)
 
-        await message_cleaner(user[0])
-
+        
+        await message_cleaner(user[0], event.data)
         return await handler(event, data)
 
 

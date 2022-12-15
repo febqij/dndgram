@@ -6,10 +6,11 @@ from aiogram.fsm.context import FSMContext
 
 import utils.keyboards as kb
 from utils.db_api.schemas.user import User
+import utils.db_api.db_quick_commands as dbqc
 from utils.filters.chat_type import ChatTypeFilter
 from utils.state import UserState
 
-from handlers.profile import show_profile_callback
+from handlers.profile import show_profile_callback, show_profile_command
 
 import middlewares as mdlw
 
@@ -42,36 +43,20 @@ async def back_to_menu_command(message: types.Message, state: FSMContext):
 
 
 @router_back.callback_query(kb.AgeCallBack.filter(F.button == "back"))
+@router_back.callback_query(kb.GenderCallBack.filter(F.button == "back"))
+@router_back.callback_query(kb.PreferencesCallBack.filter(F.button == "back"))
+@router_back.callback_query(kb.BioCallBack.filter(F.button == "back"))
+@router_back.callback_query(kb.LocationCallBack.filter(F.button == "back"))
 async def back_to_profile_from_age(callbackquery: types.CallbackQuery, state: FSMContext):
     await show_profile_callback(callbackquery, state)
 
 
-@router_back.callback_query(kb.GenderCallBack.filter(F.button == "back"))
-async def back_to_profile_from_gender(callbackquery: types.CallbackQuery, state: FSMContext):
-    await show_profile_callback(callbackquery, state)
-
-
-@router_back.callback_query(kb.PreferencesCallBack.filter(F.button == "back"))
-async def back_to_profile_from_preferences(callbackquery: types.CallbackQuery, state: FSMContext):
-    await show_profile_callback(callbackquery, state)
-
-
 @router_back.message(Command("back"), UserState.age)
-async def back_to_profile_command_from_age(message: types.Message, state: FSMContext):
-    from handlers.profile import show_profile_command
-    await show_profile_command(message, state)
-    await mdlw.message_cleaner(message.from_user)
-
-
 @router_back.message(Command("back"), UserState.gender)
-async def back_to_profile_command_from_gender(message: types.Message, state: FSMContext):
-    from handlers.profile import show_profile_command
-    await show_profile_command(message, state)
-    await mdlw.message_cleaner(message.from_user)
-
-
 @router_back.message(Command("back"), UserState.preferences)
-async def back_to_profile_command_from_preferences(message: types.Message, state: FSMContext):
-    from handlers.profile import show_profile_command
+@router_back.message(Command("back"), UserState.bio)
+@router_back.message(Command("back"), UserState.location)
+async def back_to_profile_command_from_age(message: types.Message, state: FSMContext):
+    user = await dbqc.get_user_mesages(message.from_user.id)
     await show_profile_command(message, state)
-    await mdlw.message_cleaner(message.from_user)
+    await mdlw.message_cleaner(user[0])
